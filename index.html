@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Circular Tracker — Bangladesh Job Circulars & Deadlines</title>
+<style>
+  :root{
+    --navy:#0b1f3a; --navy2:#10294d; --teal:#14b8a6; --teal-dark:#0f766e;
+    --bg:#0d213d; --panel:#122c50; --row:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --red:#dc2626; --amber:#d97706; --green:#0f766e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,var(--navy) 0%,var(--bg) 340px,#e8eef5 340px,#e8eef5 100%);color:var(--ink);min-height:100vh}
+  header{color:#fff;padding:34px 20px 26px;max-width:1020px;margin:0 auto}
+  header .kicker{color:var(--teal);font-weight:800;letter-spacing:2.5px;font-size:.75rem;text-transform:uppercase}
+  header h1{font-size:clamp(1.7rem,5vw,2.5rem);font-weight:800;margin:6px 0 6px}
+  header p{color:#bcd0e8;font-size:.98rem;max-width:640px}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+  .stat{background:var(--panel);border:1px solid #1e4066;border-top:3px solid var(--teal);padding:12px 18px;min-width:130px}
+  .stat b{display:block;font-size:1.45rem;color:#fff}
+  .stat span{color:#93a9c4;font-size:.78rem;text-transform:uppercase;letter-spacing:1px}
+  main{max-width:1020px;margin:0 auto;padding:10px 16px 40px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0 14px}
+  .chip-btn{background:#fff;border:1.5px solid #cbd5e1;color:var(--ink);padding:8px 18px;border-radius:4px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit;transition:all .18s}
+  .chip-btn:hover{border-color:var(--teal-dark);color:var(--teal-dark)}
+  .chip-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+  .chip-btn.saved.active{background:var(--teal-dark);border-color:var(--teal-dark)}
+  .list{background:#fff;box-shadow:0 16px 38px rgba(11,31,58,.20);border-top:4px solid var(--teal)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+  .job{border-bottom:1px solid #e2e8f0;border-left:6px solid var(--green);cursor:pointer;animation:slideIn .45s ease both;transition:background .15s}
+  .job:hover{background:#f0fdfa}
+  .job.urgent{border-left-color:var(--red)}
+  .job.soon{border-left-color:var(--amber)}
+  .job-main{display:grid;grid-template-columns:1fr auto;gap:6px 14px;padding:15px 18px;align-items:center}
+  .org{font-size:.78rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal-dark)}
+  .post-name{font-size:1.08rem;font-weight:700;margin:1px 0 3px}
+  .sub{color:var(--muted);font-size:.86rem}
+  .right{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+  .days{font-size:.8rem;font-weight:800;padding:5px 12px;border-radius:3px;background:#ccfbf1;color:#115e59;white-space:nowrap}
+  .days.soon{background:#fef3c7;color:#92400e}
+  .days.urgent{background:#fee2e2;color:#991b1b}
+  .bookmark{background:none;border:1.5px solid #cbd5e1;width:34px;height:34px;border-radius:4px;cursor:pointer;font-size:1rem;color:#94a3b8;line-height:1;transition:all .15s}
+  .bookmark.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .details{display:none;padding:0 18px 16px 24px}
+  .job.open .details{display:block}
+  .details-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;background:#f8fafc;border:1px solid #e2e8f0;padding:14px 16px}
+  .details-grid span{display:block;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  .details-grid b{font-size:.96rem}
+  .details p{margin-top:12px;font-size:.92rem;color:#334155;line-height:1.55}
+  .apply{display:inline-block;margin-top:12px;background:var(--navy);color:#fff;padding:9px 18px;text-decoration:none;font-weight:700;font-size:.88rem;border-radius:3px}
+  .apply:hover{background:var(--teal-dark)}
+  .empty{padding:42px 20px;text-align:center;color:var(--muted)}
+  footer{text-align:center;color:#5b7292;padding:8px 16px 32px;font-size:.9rem}
+  footer b{color:var(--navy)}
+  @media(max-width:600px){
+    .job-main{grid-template-columns:1fr}
+    .right{flex-direction:row;align-items:center}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">Bangladesh • Job Circulars</div>
+  <h1>Job Circular Tracker</h1>
+  <p>Government, bank, NGO and private job circulars in one place — with a live countdown to every application deadline. Bookmark the ones you want and never miss a last date.</p>
+  <div class="stats">
+    <div class="stat"><b id="statTotal">0</b><span>Open circulars</span></div>
+    <div class="stat"><b id="statUrgent">0</b><span>Closing in 7 days</span></div>
+    <div class="stat"><b id="statSaved">0</b><span>Bookmarked</span></div>
+  </div>
+</header>
+
+<main>
+  <div class="filters" id="filters">
+    <button class="chip-btn active" data-cat="All">All</button>
+    <button class="chip-btn" data-cat="Govt">Govt</button>
+    <button class="chip-btn" data-cat="Bank">Bank</button>
+    <button class="chip-btn" data-cat="NGO">NGO</button>
+    <button class="chip-btn" data-cat="Private">Private</button>
+    <button class="chip-btn saved" data-cat="Saved">★ Bookmarked</button>
+  </div>
+  <div class="list" id="jobList"></div>
+</main>
+
+<footer>Deadlines are counted live in your browser. Always verify details on the official circular before applying.<br>Built by <b>Nafiz Bin Azad</b></footer>
+
+<script>
+// Deadlines/publish dates are stored as day-offsets from today so the
+// countdown demo is always live whenever the page is opened.
+var JOBS = [
+  {id:"bcs47", org:"Bangladesh Public Service Commission (BPSC)", post:"47th BCS Examination — Cadre Officer", cat:"Govt", vacancy:2689, edu:"Honours / Bachelor degree", salary:"৳22,000 – ৳53,060 (Grade 9)", published:-9, deadline:5, location:"All over Bangladesh", fee:"৳700", about:"Preliminary, written and viva through BPSC. Apply online via the BPSC Teletalk portal and pay the fee by SMS within 72 hours."},
+  {id:"bb-officer", org:"Bangladesh Bank", post:"Officer (General)", cat:"Bank", vacancy:450, edu:"Honours with minimum CGPA 3.00", salary:"৳22,000 – ৳53,060 (Grade 9)", published:-6, deadline:3, location:"Dhaka (posting anywhere in BD)", fee:"Free", about:"Recruitment through the Bangladesh Bank erecruitment portal. Age limit 30 years on the last date of application."},
+  {id:"primary-teacher", org:"Directorate of Primary Education", post:"Assistant Teacher — Govt Primary School", cat:"Govt", vacancy:10219, edu:"Honours / Bachelor degree", salary:"৳11,000 – ৳26,590 (Grade 13)", published:-12, deadline:12, location:"District-wise, all divisions", fee:"৳110", about:"District-wise recruitment for government primary schools. Written MCQ exam followed by viva voce."},
+  {id:"railway", org:"Bangladesh Railway", post:"Assistant Station Master", cat:"Govt", vacancy:417, edu:"HSC / Bachelor degree", salary:"৳11,300 – ৳27,300 (Grade 12)", published:-4, deadline:18, location:"Dhaka, Chattogram, Rajshahi zones", fee:"৳223", about:"Apply through the Bangladesh Railway Teletalk portal. Written exam centre: Dhaka."},
+  {id:"sonali", org:"Sonali Bank PLC", post:"Senior Officer (IT)", cat:"Bank", vacancy:85, edu:"BSc in CSE / EEE or related", salary:"৳22,000 – ৳53,060 (Grade 9)", published:-3, deadline:9, location:"Head Office, Motijheel, Dhaka", fee:"Free", about:"Recruitment under Bankers' Selection Committee Secretariat. Shortlisted candidates sit a written test in Dhaka."},
+  {id:"brac", org:"BRAC", post:"Programme Organiser — Microfinance", cat:"NGO", vacancy:300, edu:"Bachelor degree (any discipline)", salary:"৳28,500 / month + benefits", published:-5, deadline:6, location:"Field offices across Bangladesh", fee:"Free", about:"Field-based role with extensive travel. Apply through the BRAC careers portal; women are encouraged to apply."},
+  {id:"grameen", org:"Grameen Bank", post:"Trainee Centre Manager", cat:"NGO", vacancy:150, edu:"HSC / Bachelor degree", salary:"৳24,000 / month during training", published:-2, deadline:21, location:"Rural branches, all districts", fee:"Free", about:"One-year training programme leading to a permanent centre manager position at rural branches."},
+  {id:"square", org:"Square Pharmaceuticals PLC", post:"Medical Promotion Officer", cat:"Private", vacancy:60, edu:"BSc / MSc (science background)", salary:"৳38,000 / month + TA/DA", published:-7, deadline:14, location:"Dhaka, Khulna, Barishal territories", fee:"Free", about:"Walk-in interview with CV, photographs and academic transcripts at the Square corporate office, Mohakhali, Dhaka."},
+  {id:"biman", org:"Biman Bangladesh Airlines", post:"Cabin Crew", cat:"Govt", vacancy:120, edu:"HSC (minimum GPA 3.00)", salary:"৳35,000 / month + flying allowance", published:-1, deadline:25, location:"Hazrat Shahjalal Intl Airport, Dhaka", fee:"৳335", about:"Height, vision and swimming requirements apply. Selection through written test, medical and viva."},
+  {id:"robi", org:"Robi Axiata PLC", post:"Graduate Trainee — Young Talent Programme", cat:"Private", vacancy:25, edu:"Bachelor degree, CGPA 3.00+", salary:"৳55,000 / month", published:-8, deadline:16, location:"Robi Corporate Office, Gulshan, Dhaka", fee:"Free", about:"12-month rotational programme across commercial, technology and digital teams. Online assessment followed by assessment centre."}
+];
+
+function dayMs(){ return 24 * 60 * 60 * 1000; }
+function dateFromOffset(off){
+  var d = new Date(); d.setHours(0,0,0,0);
+  return new Date(d.getTime() + off * dayMs());
+}
+function fmt(d){
+  return d.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+}
+function daysLeft(job){
+  var today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((dateFromOffset(job.deadline) - today) / dayMs());
+}
+function loadSaved(){
+  try { return JSON.parse(localStorage.getItem("jct_saved") || "[]"); }
+  catch(e){ return []; }
+}
+function storeSaved(s){ localStorage.setItem("jct_saved", JSON.stringify(s)); }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+var activeCat = "All";
+var openId = null;
+
+function render(){
+  var saved = loadSaved();
+  var list = JOBS.filter(function(j){
+    if(activeCat === "Saved") return saved.indexOf(j.id) !== -1;
+    if(activeCat !== "All") return j.cat === activeCat;
+    return true;
+  }).slice().sort(function(a,b){ return daysLeft(a) - daysLeft(b); });
+
+  document.getElementById("statTotal").textContent = JOBS.length;
+  document.getElementById("statUrgent").textContent = JOBS.filter(function(j){ return daysLeft(j) < 7; }).length;
+  document.getElementById("statSaved").textContent = saved.length;
+
+  var box = document.getElementById("jobList");
+  if(!list.length){
+    box.innerHTML = '<div class="empty">No circulars here yet. Tap the ☆ on any job to bookmark it.</div>';
+    return;
+  }
+  box.innerHTML = list.map(function(j, i){
+    var left = daysLeft(j);
+    var urgency = left < 7 ? "urgent" : (left <= 14 ? "soon" : "");
+    var chipText = left <= 0 ? "Last day today" : left + (left === 1 ? " day left" : " days left");
+    var isSaved = saved.indexOf(j.id) !== -1;
+    return '<div class="job ' + urgency + (openId === j.id ? ' open' : '') + '" data-id="' + j.id + '" style="animation-delay:' + (i * 70) + 'ms">' +
+      '<div class="job-main">' +
+        '<div><div class="org">' + esc(j.org) + ' • ' + esc(j.cat) + '</div>' +
+        '<div class="post-name">' + esc(j.post) + '</div>' +
+        '<div class="sub">Vacancy: ' + j.vacancy.toLocaleString("en-IN") + ' • ' + esc(j.edu) + ' • Deadline: ' + fmt(dateFromOffset(j.deadline)) + '</div></div>' +
+        '<div class="right"><span class="days ' + urgency + '">' + chipText + '</span>' +
+        '<button class="bookmark' + (isSaved ? ' on' : '') + '" data-save="' + j.id + '" title="Bookmark this circular">' + (isSaved ? '★' : '☆') + '</button></div>' +
+      '</div>' +
+      '<div class="details"><div class="details-grid">' +
+        '<div><span>Organisation</span><b>' + esc(j.org) + '</b></div>' +
+        '<div><span>Post</span><b>' + esc(j.post) + '</b></div>' +
+        '<div><span>Vacancy</span><b>' + j.vacancy.toLocaleString("en-IN") + ' posts</b></div>' +
+        '<div><span>Education</span><b>' + esc(j.edu) + '</b></div>' +
+        '<div><span>Salary</span><b>' + esc(j.salary) + '</b></div>' +
+        '<div><span>Published</span><b>' + fmt(dateFromOffset(j.published)) + '</b></div>' +
+        '<div><span>Deadline</span><b>' + fmt(dateFromOffset(j.deadline)) + ' (' + chipText + ')</b></div>' +
+        '<div><span>Job Location</span><b>' + esc(j.location) + '</b></div>' +
+        '<div><span>Application Fee</span><b>' + esc(j.fee) + '</b></div>' +
+      '</div><p>' + esc(j.about) + '</p>' +
+      '<a class="apply" href="#" onclick="return false;">View Official Circular</a></div>' +
+    '</div>';
+  }).join("");
+
+  box.querySelectorAll(".job").forEach(function(row){
+    row.addEventListener("click", function(e){
+      if(e.target.closest("[data-save]")) return;
+      var id = row.getAttribute("data-id");
+      openId = (openId === id) ? null : id;
+      render();
+    });
+  });
+  box.querySelectorAll("[data-save]").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var id = btn.getAttribute("data-save");
+      var s = loadSaved();
+      var idx = s.indexOf(id);
+      if(idx === -1) s.push(id); else s.splice(idx, 1);
+      storeSaved(s);
+      render();
+    });
+  });
+}
+
+document.getElementById("filters").addEventListener("click", function(e){
+  var btn = e.target.closest("[data-cat]");
+  if(!btn) return;
+  activeCat = btn.getAttribute("data-cat");
+  this.querySelectorAll(".chip-btn").forEach(function(b){ b.classList.toggle("active", b === btn); });
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
